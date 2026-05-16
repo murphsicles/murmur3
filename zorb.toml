@@ -1,0 +1,10 @@
+[package]
+name = "@crypto/murmur3"
+version = "0.5.2"
+edition = "2026"
+authors = ["The Zeta Foundation <team@z-lang.org>"]
+description = "MurmurHash3 32-bit for Zeta — used in BSV P2P bloom filters"
+license = "MIT"
+repository = "https://github.com/murphsicles/murmur3"
+keywords = ["murmur3", "murmurhash", "hash", "bloom", "bsv", "p2p"]
+categories = ["cryptography::hash"]

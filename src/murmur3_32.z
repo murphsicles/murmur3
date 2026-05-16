@@ -1,0 +1,80 @@
+/// MurmurHash3 32-bit implementation for Zeta
+/// Used in BSV P2P bloom filters
+/// Reference: https://github.com/aappleby/smhasher
+
+const C1: u32 = 0xcc9e2d51;
+const C2: u32 = 0x1b873593;
+
+/// MurmurHash3 32-bit hash value
+pub struct Murmur3_32 {
+    inner: u32,
+}
+
+impl Murmur3_32 {
+    pub fn new() -> Self {
+        Self { inner: 0 }
+    }
+
+    /// Compute MurmurHash3 32-bit of data with given seed
+    pub fn hash(data: &[u8], seed: u32) -> Self {
+        let h = murmur3_32(data, seed);
+        Self { inner: h }
+    }
+
+    pub fn value(self) -> u32 {
+        self.inner
+    }
+}
+
+/// Compute MurmurHash3 32-bit hash of data with given seed
+pub fn murmur3_32(key: &[u8], seed: u32) -> u32 {
+    let len = key.len();
+    let nblocks = len / 4;
+    let mut h = seed;
+
+    // Process 4-byte blocks
+    for i in 0..nblocks {
+        let offset = i * 4;
+        let mut k = (key[offset] as u32)
+            | ((key[offset + 1] as u32) << 8)
+            | ((key[offset + 2] as u32) << 16)
+            | ((key[offset + 3] as u32) << 24);
+
+        k = k.wmul(C1);
+        k = (k << 15) | (k >> 17);
+        k = k.wmul(C2);
+
+        h ^= k;
+        h = (h << 13) | (h >> 19);
+        h = h.wmul(5).wadd(0xe6546b64);
+    }
+
+    // Tail: remaining 1-3 bytes
+    let tail_offset = nblocks * 4;
+    let tail_len = len & 3;
+    let mut k1: u32 = 0;
+
+    if tail_len == 3 {
+        k1 ^= (key[tail_offset + 2] as u32) << 16;
+    }
+    if tail_len >= 2 {
+        k1 ^= (key[tail_offset + 1] as u32) << 8;
+    }
+    if tail_len >= 1 {
+        k1 ^= key[tail_offset] as u32;
+        k1 = k1.wmul(C1);
+        k1 = (k1 << 15) | (k1 >> 17);
+        k1 = k1.wmul(C2);
+        h ^= k1;
+    }
+
+    // Finalization: fmix
+    h ^= len as u32;
+    h ^= h >> 16;
+    h = h.wmul(0x85ebca6b);
+    h ^= h >> 13;
+    h = h.wmul(0xc2b2ae35);
+    h ^= h >> 16;
+
+    h
+}

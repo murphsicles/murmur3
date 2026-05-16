@@ -1,0 +1,4 @@
+/// Murmur3 hash functions for Zeta
+/// Implements MurmurHash3 32-bit, used in BSV bloom filters
+
+pub use murmur3_32::{murmur3_32, Murmur3_32};
